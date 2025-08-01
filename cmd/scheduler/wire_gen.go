@@ -18,12 +18,12 @@ import (
 // Injectors from wire.go:
 
 func InitializeEvent() *app.App {
-	configConfig := config.NewConfig()
-	db := data.NewDB(configConfig)
+	bootStrap := config.NewBootStrap()
+	db := data.NewDB(bootStrap)
 	jobRepo := data.NewJobRepo(db)
-	jobService := core.NewJobService(jobRepo)
-	jobApi := api.NewJobApi(jobService)
-	router := server.NewRouter(jobApi)
+	jobAdminService := core.NewJobAdminService(jobRepo, bootStrap)
+	jobAdminApi := api.NewJobAdminApi(jobAdminService)
+	router := server.NewRouter(jobAdminApi)
 	httpServer := server.NewServer(router)
 	appApp := app.NewApp(httpServer)
 	return appApp

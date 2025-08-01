@@ -5,5 +5,5 @@ import (
 )
 
 var CoreProviderSet wire.ProviderSet = wire.NewSet(
-	NewJobService,
+	NewJobAdminService,
 )
