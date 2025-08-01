@@ -1,0 +1,10 @@
+service:
+  env: dev
+  name: scheduler
+  version: v1.0.0
+
+data:
+  database:
+    driver: mysql
+    source: sjzy_dev_user:818f83e5@tcp(common-db.dev.sjzy.local:3306)/bsi_scheduler?charset=utf8mb4&parseTime=True&loc=Local
+    debug: true

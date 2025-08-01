@@ -1,2 +1,7 @@
 # hegelscheduler
-任务调度系统
+
+
+
+## hegelscheduler Architecture
+
+![img.png](architecture.png)
