@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-co-op/gocron/v2"
 	"hegelscheduler/internal/model"
+	"hegelscheduler/internal/queue"
 	"log"
 	"time"
 )
@@ -14,9 +15,10 @@ type HegelScheduler struct {
 	jobChan   chan *model.Job
 	stopChan  chan bool
 	scheduler gocron.Scheduler
+	productor queue.Productor
 }
 
-func NewHegelScheduler() *HegelScheduler {
+func NewHegelScheduler(productor queue.Productor) *HegelScheduler {
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
 		panic(err)
@@ -26,6 +28,7 @@ func NewHegelScheduler() *HegelScheduler {
 		stopChan:  make(chan bool),
 		IsLeader:  false,
 		scheduler: scheduler,
+		productor: productor,
 	}
 }
 
@@ -51,11 +54,14 @@ func (s *HegelScheduler) Elect() {
 }
 
 // Start the HegelScheduler
-func (s *HegelScheduler) Start() error {
-	go s.Poll()
-	go s.Consumer()
+func (s *HegelScheduler) Start() {
 	s.scheduler.Start()
-	return nil
+	go s.Consumer()
+	go func() {
+		if err := s.Poll(); err != nil {
+			log.Println(err.Error())
+		}
+	}()
 }
 
 // Consumer New Jobs
@@ -104,7 +110,12 @@ func (s *HegelScheduler) AddJob(job *model.Job) error {
 }
 
 // Publish jobExecution event to queue
-func (s *HegelScheduler) Publish(*model.Job) error {
+func (s *HegelScheduler) Publish(job *model.Job) error {
+
+	if err := s.productor.Publish(job, Queue); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -125,7 +136,7 @@ func (s *HegelScheduler) Poll() error {
 						log.Println("Poller recovered:", r)
 					}
 				}()
-				newJobs, err := s.GetNewJobs()
+				newJobs, err := s.GetNewJobsFromDb()
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -139,7 +150,7 @@ func (s *HegelScheduler) Poll() error {
 	}
 }
 
-// GetNewJobs get new jobs from db
-func (s *HegelScheduler) GetNewJobs() ([]*model.Job, error) {
+// GetNewJobsFromDb get new jobs from db
+func (s *HegelScheduler) GetNewJobsFromDb() ([]*model.Job, error) {
 	return nil, nil
 }

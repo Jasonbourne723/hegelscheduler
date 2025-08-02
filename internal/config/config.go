@@ -52,6 +52,7 @@ type Service struct {
 
 type Data struct {
 	Database Database `json:"database"`
+	RabbitMQ string   `json:"rabbitmq"`
 }
 
 type Database struct {
