@@ -1,0 +1,73 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: job-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: scheduer
+      MYSQL_USER: jobuser
+      MYSQL_PASSWORD: jobpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+
+  etcd:
+    image: quay.io/coreos/etcd:v3.5
+    container_name: job-etcd
+    command: >
+      /usr/local/bin/etcd
+      --name job-etcd
+      --data-dir /etcd-data
+      --listen-client-urls http://0.0.0.0:2379
+      --advertise-client-urls http://job-etcd:2379
+    ports:
+      - "2379:2379"
+    volumes:
+      - ./data/etcd:/etcd-data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: job-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: jobuser
+      RABBITMQ_DEFAULT_PASS: jobpass
+    ports:
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # Web UI
+    volumes:
+      - ./data/rabbitmq:/var/lib/rabbitmq
+
+  scheduler:
+    build:
+      context: ./scheduler
+      dockerfile: Dockerfile
+    container_name: job-scheduler
+    depends_on:
+      - mysql
+      - etcd
+      - rabbitmq
+    environment:
+      DB_DSN: jobuser:jobpass@tcp(mysql:3306)/jobdb?charset=utf8mb4&parseTime=True&loc=Local
+      ETCD_ENDPOINT: etcd:2379
+      RABBITMQ_URL: amqp://jobuser:jobpass@rabbitmq:5672/
+    ports:
+      - "8080:8080"
+    restart: always
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: job-worker
+    depends_on:
+      - mysql
+      - rabbitmq
+    environment:
+      DB_DSN: jobuser:jobpass@tcp(mysql:3306)/jobdb?charset=utf8mb4&parseTime=True&loc=Local
+      RABBITMQ_URL: amqp://jobuser:jobpass@rabbitmq:5672/
+    restart: always
