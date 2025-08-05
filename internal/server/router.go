@@ -19,7 +19,6 @@ func (router *router) Router() *gin.Engine {
 
 	r := gin.New()
 	r.Use(gin.Recovery())
-
 	jobRouter := r.Group("JobAdmin")
 	{
 		jobRouter.POST("/", router.jobAdminApi.Create)

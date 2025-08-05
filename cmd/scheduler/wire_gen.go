@@ -25,6 +25,6 @@ func InitializeEvent() *app.App {
 	jobAdminApi := api.NewJobAdminApi(jobAdminService)
 	router := server.NewRouter(jobAdminApi)
 	httpServer := server.NewServer(router)
-	appApp := app.NewApp(httpServer)
+	appApp := app.NewApp(httpServer, db)
 	return appApp
 }

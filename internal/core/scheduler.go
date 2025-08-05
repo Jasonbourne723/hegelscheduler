@@ -1,9 +1,11 @@
 package core
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/go-co-op/gocron/v2"
+	"hegelscheduler/internal/data"
 	"hegelscheduler/internal/model"
 	"hegelscheduler/internal/queue"
 	"log"
@@ -16,9 +18,10 @@ type HegelScheduler struct {
 	stopChan  chan bool
 	scheduler gocron.Scheduler
 	productor queue.Productor
+	jobRepo   data.JobRepo
 }
 
-func NewHegelScheduler(productor queue.Productor) *HegelScheduler {
+func NewHegelScheduler(productor queue.Productor, jobRepo data.JobRepo) *HegelScheduler {
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
 		panic(err)
@@ -29,6 +32,7 @@ func NewHegelScheduler(productor queue.Productor) *HegelScheduler {
 		IsLeader:  false,
 		scheduler: scheduler,
 		productor: productor,
+		jobRepo:   jobRepo,
 	}
 }
 
@@ -136,7 +140,7 @@ func (s *HegelScheduler) Poll() error {
 						log.Println("Poller recovered:", r)
 					}
 				}()
-				newJobs, err := s.GetNewJobsFromDb()
+				newJobs, err := s.GetAvailableJobs()
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -150,7 +154,8 @@ func (s *HegelScheduler) Poll() error {
 	}
 }
 
-// GetNewJobsFromDb get new jobs from db
-func (s *HegelScheduler) GetNewJobsFromDb() ([]*model.Job, error) {
+// GetAvailableJobs get new jobs from db
+func (s *HegelScheduler) GetAvailableJobs() ([]*model.Job, error) {
+	s.jobRepo.GetAvailableJobs(context.Background(), nil)
 	return nil, nil
 }

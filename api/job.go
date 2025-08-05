@@ -22,9 +22,11 @@ func (s *JobAdminApi) Create(ctx *gin.Context) {
 	var request dto.CreateJobRequest
 	if err := ctx.BindJSON(&request); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 	if err := s.srv.Create(ctx.Request.Context(), request); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
@@ -34,9 +36,11 @@ func (s *JobAdminApi) Update(ctx *gin.Context) {
 	var request dto.UpdateJobRequest
 	if err := ctx.BindJSON(&request); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 	if err := s.srv.Update(ctx.Request.Context(), request); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
@@ -44,23 +48,26 @@ func (s *JobAdminApi) Update(ctx *gin.Context) {
 // Delete Jobs by jobIds
 func (s *JobAdminApi) Delete(ctx *gin.Context) {
 	var ids []uint64
-	if ctx.BindJSON(&ids) == nil {
+	if err := ctx.BindJSON(&ids); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": ids})
+		return
 	}
 	if err := s.srv.Delete(ctx.Request.Context(), ids); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-// PageList jobs
 func (s *JobAdminApi) PageList(ctx *gin.Context) {
 	var request dto.PageRequest
-	if err := ctx.BindJSON(&request); err != nil {
+	if err := ctx.BindQuery(&request); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 	if response, err := s.srv.PageList(ctx.Request.Context(), request); err != nil {
 		ctx.JSON(http.StatusInternalServerError, response)
+		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
 }

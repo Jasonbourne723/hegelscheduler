@@ -16,6 +16,9 @@ type Job struct {
 	RetryInterval int            `gorm:"default:60;comment:重试间隔（秒）"`
 	Timeout       int            `gorm:"default:300;comment:任务超时时间（秒）"`
 	Payload       JSONMap        `gorm:"type:json;comment:任务负载（worker 所需数据）"`
+	TargetURL     string         `gorm:"type:varchar(512);not null;comment:任务执行的目标URL"`
+	Method        string         `gorm:"type:varchar(8);default:POST;comment:请求方法"`
+	Headers       JSONMap        `gorm:"type:json;comment:请求头"`
 	Status        string         `gorm:"type:varchar(32);not null;default:ENABLED;comment:任务状态"`
 	CreatedBy     string         `gorm:"type:varchar(128);comment:创建人"`
 	CreatedAt     time.Time      `gorm:"autoCreateTime"`

@@ -4,6 +4,7 @@ import (
 	"context"
 	"gorm.io/gorm"
 	"hegelscheduler/internal/model"
+	"time"
 )
 
 type JobRepo struct {
@@ -27,7 +28,7 @@ func (s *JobRepo) Create(ctx context.Context, job model.Job) error {
 // Update  job information
 func (s *JobRepo) Update(ctx context.Context, job model.Job) error {
 
-	if err := s.WithContext(ctx).Save(&job).Error; err != nil {
+	if err := s.WithContext(ctx).Model(&job).Omit("created_at", "created_by").Updates(job).Error; err != nil {
 		return err
 	}
 	return nil
@@ -59,4 +60,20 @@ func (s *JobRepo) PageList(ctx context.Context, index int, size int) (int64, []m
 		return 0, nil, err
 	}
 	return total, list, nil
+}
+
+func (s *JobRepo) GetAvailableJobs(ctx context.Context, afterTime *time.Time) ([]model.Job, error) {
+	var (
+		list []model.Job
+		err  error
+	)
+	query := s.WithContext(ctx).Model(&model.Job{}).Where("status = ?", "ENABLED")
+	if afterTime != nil {
+		query = query.Where("updated_at = ?", *afterTime)
+	}
+	if err = query.Find(&list).Error; err != nil {
+		return nil, err
+	} else {
+		return list, nil
+	}
 }
