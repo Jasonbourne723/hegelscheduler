@@ -62,15 +62,25 @@ func (s *JobRepo) PageList(ctx context.Context, index int, size int) (int64, []m
 	return total, list, nil
 }
 
-func (s *JobRepo) GetAvailableJobs(ctx context.Context, afterTime *time.Time) ([]model.Job, error) {
+func (s *JobRepo) GetAvailableJobs(ctx context.Context) ([]*model.Job, error) {
 	var (
-		list []model.Job
+		list []*model.Job
 		err  error
 	)
 	query := s.WithContext(ctx).Model(&model.Job{}).Where("status = ?", "ENABLED")
-	if afterTime != nil {
-		query = query.Where("updated_at = ?", *afterTime)
+	if err = query.Find(&list).Error; err != nil {
+		return nil, err
+	} else {
+		return list, nil
 	}
+}
+
+func (s *JobRepo) GetNewAvailableJobs(ctx context.Context, afterTime time.Time) ([]*model.Job, error) {
+	var (
+		list []*model.Job
+		err  error
+	)
+	query := s.WithContext(ctx).Model(&model.Job{}).Where("status = ? and updated_at >= ?", "ENABLED", afterTime)
 	if err = query.Find(&list).Error; err != nil {
 		return nil, err
 	} else {

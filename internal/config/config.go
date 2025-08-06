@@ -8,8 +8,9 @@ import (
 )
 
 type BootStrap struct {
-	Service Service `json:"service"`
-	Data    Data    `json:"data"`
+	Service   Service   `json:"service"`
+	Data      Data      `json:"data"`
+	Scheduler Scheduler `json:"scheduler"`
 }
 
 func NewBootStrap() *BootStrap {
@@ -48,6 +49,11 @@ type Service struct {
 	Env     string `json:"env"`
 	Name    string `json:"name"`
 	Version string `json:"version"`
+}
+
+type Scheduler struct {
+	Host string `json:"host"`
+	Port string `json:"port"`
 }
 
 type Data struct {

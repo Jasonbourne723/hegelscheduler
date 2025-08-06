@@ -6,12 +6,14 @@ import (
 )
 
 type router struct {
-	jobAdminApi *api.JobAdminApi
+	jobAdminApi    *api.JobAdminApi
+	jobExectionApi *api.JobExectionApi
 }
 
-func NewRouter(jobAdminApi *api.JobAdminApi) *router {
+func NewRouter(jobAdminApi *api.JobAdminApi, jobExectionApi *api.JobExectionApi) *router {
 	return &router{
-		jobAdminApi: jobAdminApi,
+		jobAdminApi:    jobAdminApi,
+		jobExectionApi: jobExectionApi,
 	}
 }
 
@@ -25,6 +27,13 @@ func (router *router) Router() *gin.Engine {
 		jobRouter.PUT("/", router.jobAdminApi.Update)
 		jobRouter.DELETE("/", router.jobAdminApi.Delete)
 		jobRouter.GET("/Page", router.jobAdminApi.PageList)
+	}
+
+	jobExectionRouter := r.Group("JobExection")
+	{
+		jobExectionRouter.POST("Running/:id", router.jobExectionApi.SetRunning)
+		jobExectionRouter.PUT("Success/:id", router.jobExectionApi.SetSuccess)
+		jobExectionRouter.DELETE("Failed/:id", router.jobExectionApi.SetFailed)
 	}
 
 	r.GET("/", func(c *gin.Context) {

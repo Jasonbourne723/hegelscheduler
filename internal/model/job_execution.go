@@ -13,5 +13,13 @@ type JobExecution struct {
 	Status        string     `gorm:"type:varchar(32);not null;index:idx_status;comment:状态（RUNNING/SUCCESS/FAILED/...）"`
 	Result        string     `gorm:"type:text;comment:执行结果或错误信息"`
 	WorkerID      string     `gorm:"type:varchar(128);comment:worker实例ID"`
+	WorkerIP      string     `gorm:"type:varchar(128);comment:workerIP地址"`
 	CreatedAt     time.Time  `gorm:"autoCreateTime"`
 }
+
+const (
+	JobExecutionStatusReady   = "ready"
+	JobExecutionStatusRunning = "running"
+	JobExecutionStatusSuccess = "success"
+	JobExecutionStatusFailed  = "failed"
+)

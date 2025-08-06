@@ -10,4 +10,5 @@ const (
 
 var CoreProviderSet wire.ProviderSet = wire.NewSet(
 	NewJobAdminService,
+	NewJobExectionService,
 )
